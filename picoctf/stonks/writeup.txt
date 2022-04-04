@@ -1,0 +1,7 @@
+scuffed writeup incomin
+broke my head for 2 long on this' so I read a writeup, shoulda known its leaking off the stack...
+welp, i'm new to this so oh well.
+then i got it in little endian, worked in python to reformat it from hex to the flag
+which for me is:
+picoCTF{I_l05t_4ll_my_m0n3y_bdc425ea}
+damn. I suck at binary exp.

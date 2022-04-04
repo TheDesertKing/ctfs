@@ -90,7 +90,7 @@ int buy_stonks(Portfolio *p) {
 	printf("What is your API token?\n");
 	scanf("%300s", user_buf);
 	printf("Buying stonks with token:\n");
-	printf(user_buf);
+	printf("This is my print: %s",user_buf);
 
 	// TODO: Actually use key to interact with API
 
