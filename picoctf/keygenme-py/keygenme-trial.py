@@ -142,12 +142,15 @@ def check_key(key, username_trial):
     global key_full_template_trial
 
     if len(key) != len(key_full_template_trial):
+        print(f'fail#0: {len(key)} != {len(key_full_template_trial)}') 
+        print(f'{key_full_template_trial}')
         return False
     else:
         # Check static base key part --v
         i = 0
         for c in key_part_static1_trial:
             if key[i] != c:
+                print(f'fail#1: {key[i]} != {c}')
                 return False
 
             i += 1
@@ -161,6 +164,7 @@ def check_key(key, username_trial):
 
         if key[i] != hashlib.sha256(username_trial).hexdigest()[5]:
             return False
+        #PRITCHARD
         else:
             i += 1
 
