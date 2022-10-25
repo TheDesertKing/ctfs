@@ -1,0 +1,34 @@
+solver: Amitz
+date: 26/05/22
+
+estimated time of solving ~5 mins
+
+Walk-through:
+After wget'ing the chal.c file, i opened it and saw the "gets" vulnerable function, alongside two unused strings, "term" and "quote".
+
+These strings are initiated as z-filled, which means it is filled with 0's, not as characters, but as ascii values of the chars.
+
+Then the "gets" function is called to get a value for "qoute", which is 32 char's long, which can lead to a buffer overflow.
+
+How? 
+
+First we must understand:
+
+The vulnerability in "gets" is in play here:
+the function "gets" doesn't check the buffer it tries to insert into the variable, so if we insert a string longer than the variable can hold, an overflow would occurre, causing the next variable's content to be filled with the overflowed data.
+
+Knowing that we can get the flag:
+
+Going through the code we can understand our "win condition", the case in which we get the flag, happends when the variable `term` is equal to "BaDaSs I Am".
+
+The way to change the value of `term` is by overflowing the variable quote, so Inserting the string:
+
+abcdabcdabcdabcdabcdabcdabcdabcdBaDaSs I Am
+
+Would cause value of `quote` to be:
+"abcdabcdabcdabcdabcdabcdabcdabcd"
+
+And the value of `term` to be:
+"BaDaSs I Am"
+
+So the flag is shown.

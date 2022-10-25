@@ -1,0 +1,31 @@
+At first I checked the `atoi` C function, to understand whether it treats it's parameter as hex-string or int-string. It treats it as int-string.
+There are a few special file descriptors I'll like to check: 0,1,2 as these correlate to: `stdin`,`stdout`,`stderr`, respectively.
+
+Checked out what 0x1234 correlates for in base-10 using python: python3 -c "print(int(0x1234))" --> 4660.
+
+This line in the source C code of fd:
+
+```if(!strcmp("LETMEWIN\n", buf)){```
+
+seems to be the win-condition, where buf is coming from:
+
+```len = read(fd, buf, 32)```
+
+which means the value in buf is read from the file with the filedescriptor `fd`, which it's value comes from:
+
+```int fd = atoi( argv[1] ) - 0x1234```
+
+so `fd` will be equal to whatever value we put in argv[1] minus 4660, so if we do:
+
+$ ./fd VALUE
+
+`fd`'s value will be VALUE - 4660, so if VALUE == 4660, the input for `buf` will be from the file decriptor 0, which is `stdin`, that means we can input whatever 32 chars into `buf` we want.
+
+In order to reach our win-condition, `buf` has to contain: "LETMEWIN\n", so all we need to do is:
+
+$ ./fd 4660
+LETMEWIN				(this is the `stdin` the program waits for before executing the rest of the code)
+
+And press Enter (which adds `\n` to the "LETMEWIN" string), the flag will be catted!
+
+FLAG: good job :)

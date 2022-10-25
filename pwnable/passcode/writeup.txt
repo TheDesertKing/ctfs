@@ -1,0 +1,18 @@
+Wow this one was a doozie for me...
+
+Took it straight to GDB without even reading the code, just for the challenge, and it became obvious there are two checks of inputs I need to pass.
+
+Before long I found a way to get through the first check, as it reads from the last 4 bytes of the name[] array, but I coulden't find a way to override the next 4 bytes, being checked for password2, and also the code kept getting a segementation fault whenever I inserted the value for the third scanf, for the password2 variable.
+
+Some stuff didn't add up... fflush with scanf has undefined behaviour, or rather OS family specific behaviour, but the Unix behaviour didn't seem exploitable in this case, and when trying to compile the source code myself I got warnings, telling me that using scanf the way it is used in the code leads to assigning values inputed as pointers of ints rather than integers.
+
+So I failed in figuring it out on my own, after a few houres, I broke and checked a writeup, and I was close but no cigar, the solution is to send a payload as such:
+
+96 * 'A' + {address of fflush} + {address of the instruction calling to the `cat` command}
+
+The A's for padding, address of fflush is the address that we will be overriding, since the value inputed gets interpreted as an address, and the address for `cat` will override the first instruction of fflush which is a jmp, with the location jumped to being the instruction that gets us the flag!
+
+Briliiant! 
+
+So to get the address of fflush i used the `got` command in GDB Gef: got fflush -> 0x8048436.
+And the address to jump to from the instruction after the last jne, essencially the next instruction after the password1 and password2 check -> 0x080485d7.

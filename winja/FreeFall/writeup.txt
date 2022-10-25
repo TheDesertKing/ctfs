@@ -1,0 +1,7 @@
+After disassembling the executable, it's obvious we will achieve the flag via the 'win' function, that can only be called by exploiting the 'gets' function.
+
+So trial and error led me to understand the buffer is 40 byte long (could have figured it out with cyclic patterns or by reading the disassembled executable, but 2late sorry) and by using IDA I found out the address of the 'win' function is 0x0000000000401172. (it's this long cause it's a 64-bit program)
+
+by using python, I generated a byte array that would led the bof1 executable to call the 'win' function, which runs the shell command 'cat flag.txt':
+
+py -c "print('\x01'*40+'\x72\x11\x40\x00\00\00\00\00')" | nc freefall.chall.winja.site 18967

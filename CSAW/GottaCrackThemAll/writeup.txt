@@ -1,0 +1,11 @@
+There's a lot to this challenge, it involves many different tools:
+
+Firstly - the WayBack machine! it is used through the tweeter to find the deleted tweet he mentioned he's so lucky to have been able to delete, which leads us to a github user name.
+
+Looking at the GitHub profile, there are only two commits made by it to it's repository, the most recent one removes one 'log.txt' file.
+
+Inside said file, we have a bit.ly link, linking to a wav file in stored on mega.nz, a morse code that decodes to some instructions.
+
+from the instructions we get to download a pdf image and open in through it's password, which is a 'swift code' of the bank having the bin code we are provided.
+
+

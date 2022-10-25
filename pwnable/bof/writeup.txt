@@ -1,0 +1,13 @@
+After looking at the source code, it looks like a simple buffer-overflow to override a variable that is being compared.
+
+The win condition here is override the value of the variable key which has the value of 0xdeadbeef to a new value: 0xcafebabe, using the gets function being called on a 32 byte buffer.
+
+In order to override the specific 0xdeadbeef value I will need to know what's it's offset from our at the time of executing the `compare` instruction, so I fired up GDB (with Gef which I'm struggeling to learn) and inserted a breakpoint right before the `compare` instruction.
+
+Examining the stack (x/50wx $esp) I was able to see that the offset from the start of my input to the 0xdeadbeef value was exactly 52 bytes long, so now all I need to do is write a python script that will print the payload:
+
+ABASDFASDFDHEGAR... (52 chars for the offset) 0xcafebabe (but in little endian format)
+
+And boom! got the flag.
+
+FLAG: daddy, I just pwned a buFFer :)

@@ -1,0 +1,62 @@
+solver: Amitz
+date: 26/05/22
+
+approximated solution time: 35 mins.
+
+Jail Escape.
+
+This challenge is complex and contains elements from how python itself works and the requests module.
+
+Looking at the source code, we have access to an exec function, which executes whatever python code we insert,
+but not freely, as some strings are restricted.
+
+Let me take you through the journey I made in order to solve this challenge:
+
+At first, I tried searching for an OS module method named `get`, since it was hinted that the solution would be related to get.
+
+After that yielded nothing, I went and googled `python jail break`, to see if there are similiar challenges.
+
+I found some blog about some similiar challenge: https://anee.me/escaping-python-jails-849c65cf306e
+
+In it was a part of the solution: using __builtins__.__dict__['COMMAND'.lower()].
+
+Using this syntax gives us the ability to evade the restricted strings, even when running functions,
+
+Since:
+
+__builtins__.__dict__['FUNCTION'.lower()](param)
+
+Is the same as running:
+
+function(param)
+
+Using this syntax we can also import modules and use them with the power of __import__:
+
+__builtints__.__dict__['__IMPORT__'.lower()]('MODULE_NAME'.lower()).__dict__['FUNCTION'.lower()](param)
+
+Which is the same as:
+
+module_name.function(param)
+
+Using this neat trick, I imported the `OS` module and executed the bash command by calling system:
+
+__builtins__.__dict__['__IMPORT__'.lower()]('OS'.lower()).__dict__['SYSTEM'.lower()]('bash')
+
+... And that got me shell!
+
+I searched for a while for a flag, using find:
+
+find / -name "flag" 
+And
+find / -name "localhost"
+
+But it didn't return a location.
+
+So I read the challenge instruction again, and having the GET be uppercased made the penny drop:
+~I need to use the requests module in order to send a GET request to localhost!
+
+Using the trick mentioned above, I crafted this python one liner:
+
+print(__builtins__.__dict__['__IMPORT__'.lower()]('REQUESTS'.lower()).__dict__['GET'.lower()]('http://'+'LOCALHOST'.lower()).text)
+
+In order to reach the flag file on localhost. (localhost is capitalized because it contains 'os' which is banned)

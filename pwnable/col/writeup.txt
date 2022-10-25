@@ -1,0 +1,35 @@
+After reading the col.c source code, it's easy to see a few things:
+
+argv[1], our input, needs to be 20 char long.
+```
+if(strlen(argv[1]) != 20){
+	printf("passcode length should be 20 bytes\n");
+```
+
+our win-condition is if the return value of the function `check_password` is equal to 0x21dd09ec.
+```
+if(hashcode == check_password( argv[1] )){
+	system("/bin/cat flag");
+```
+```unsigned long hashcode = 0x21DD09EC```
+
+and lastly, the function `check_password` return value is as such:
+
+inp[0:4] + inp[4:8] + inp[8:12] + inp[12:16] + inp[16:20]
+where inp = argv[1]
+and the int value of each char is their ASCII value.
+
+All we gotta do is pass a string where it's five parts added together equal to 0x21dd09ec.
+
+So after some calculations in python:
+
+`0x21dd09ec // 5` -> 0x6c5cec8 (division without remainder)
+`0x21dd09ec % 5` -> 0x4
+
+I came up with the payload:
+
+0x6c5cec8 * 4 + 0x6c5cecc
+
+Using some pwntools magic I could get the flag:
+
+FLAG: daddy! I just managed to create a hash collision :)

@@ -1,0 +1,7 @@
+After messing around in GDB it seems futile to try and debug a striped executable... so I went on to see what 'packed' means, and it means this executable has been compressed.
+
+Using `strings` I tried to find any signature of a packer, and it was simple to find UPX's signature, so I downloaded it and unpacked the executable.
+
+Now that it isn't stripped I can do the normal GDB magic, so I inserted a breakpoint at the `main` function, and down the line, the flag is being inserted into the `rdx` register.
+
+FLAG: UPX...? sounds like a delivery service :)

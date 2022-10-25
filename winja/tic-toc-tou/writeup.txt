@@ -1,0 +1,13 @@
+Was unable to connect to the server:
+
+ssh -p 2222 -l foxy toctou.chall.winja.site
+
+using the password 'foxy', as described:
+
+"""
+
+Can you exploit this SUID program to get the flag at /root/flag.txt, credentials for ssh foxy:foxy
+
+toctou.chall.winja.site:2222
+
+"""

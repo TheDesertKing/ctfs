@@ -1,0 +1,14 @@
+Getting into the challenge, the first page, '/stuff', is filled with random words wrapped in <a> HTML tags (links).
+After opening up the Inspector tool, it seems like all of the <a> tags are missing thier href property, which tells the browser where to redirect to when clicked.
+I then opened my terminal and used `wget`, a terminal tool for downloading the contents of a web page, to download the contents of '/stuff'.
+using `grep`, a tool to search for content in data, I searched 'href'.
+This turned over two lines, one where some CSS is imported, and the other is the next stage of the challenge, an <a> tag linking to '/change/'.
+
+After tinkering around, I figured out the the next word is randomly generated every minute or so. going through those links for 10~20 times led me nowhere, as the words don't seem to have any pattern or make any cohirent sentence.
+
+I could not solve this!	
+
+I came out with a last ditch effort - writing a script that will do the enumeration for me, go through the links and see what happends.
+This was done via python's `requests` module, specifically by using a Session to traverse through the 'stuff', as it provides an easy way for cookies to be saved and sent again on the next request, as it seems we need to have some sort of wordlist of words we traverse through for the flag to be provided to us.
+
+CTF{w0rdS_4R3_4mAz1nG_r1ght}
