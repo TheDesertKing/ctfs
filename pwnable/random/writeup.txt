@@ -1,0 +1,26 @@
+This challenge felt much simpler than the last one (passcode), and is quite straight forward.
+
+First, let's see the parts that confused me:
+
+'random' is an SUID binary, meaning that it allows any user to execute it if they have sudo permissions to the user who owns it. This seems to not have any effect on the solution.
+
+When compiling locally with GCC, you get a warning about implicit declarations of the functions 'rand' and 'system'. After some research it seems this warning is due to lack of function declarations before they are called, IE: missing inclusion of header files containing those functions.
+
+Now the solution:
+Due to the functionallity of the 'rand' function, the "psudue generated" number it returns is relient on an constant equation, that takes constant variables, meaning that the returned int is always the same!
+(The calculation is dependant on the system/hardware of the machine it is compiled in)
+
+With this knowledge in hand, the solution seems simple:
+The program generates an unsigned int value (0x6b8b4567 for the binary on the server), takes input integer from the user, and checks if (input XOR 0x6b8b4567 == 0xdeadbeef) is TRUE.
+
+Our win condition is to make sure the afformentioned expression is TRUE, and due to the mathematical nature of the XOR operation this is simple to calculate. XOR has this mathematical relationship:
+
+a XOR b == b XOR a
+
+And:
+
+a XOR b == c
+c XOR b == a
+a XOR c == b
+
+So our input should be equal to: (0xdeadbeef XOR 0x6b8b4567), or in other words: 0xb0526fb88, or in other other words: 3039230856!
