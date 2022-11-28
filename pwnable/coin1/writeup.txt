@@ -1,0 +1,13 @@
+Hell yeah! Binary search!
+
+This challenge seems easy enough, run a script that runs a binary search through netcat!
+
+So after not remembering how to program a binary search (embarrasing, I know) and being very tired, I tried to create an algorithem for binary searching, and failed miserably, thus the solution in failed_solutions.
+
+After more thought, my first algorithem was nearly correct! I used an offset instead of two pointer approach!
+So now that I worked out both the two pointer and recurssion aproaches, I can win!
+
+So I built the script to find all the fake coins, but it was too slow running on my local pc, as the data transfer took most of the runtime, so I connected to the input level's server: `ssh input2@pwnable.kr -p2222` and ran it from the /tmp/mydir directory I created, and vuala, the flag!
+
+Had to make a bit of changes to accomidate the python2 installed on the pwnable server, mainly changing recvS() to recv().decode(), as it seems that it doesn't exist in the python2 version of pwntools.
+
