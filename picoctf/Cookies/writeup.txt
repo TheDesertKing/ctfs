@@ -1,0 +1,9 @@
+Another simple challenge, as indicated by the title, it is about changing the cookies.
+
+When typing the suggested 'snickerdoodle' into the searchbar, we are being redirected to the '/search' endpoint, that sets our cookie 'name' to the value of 0. Then it redirects us to the '/check' endpoint.
+
+If we type random stuff into the searchbar, we are again redirected to the '/search' endpoint, which sets our cookie 'name' to -1. We are redirected then to the '/' endpoint.
+
+If we make a request to the '/check' endpoint with different 'name' values, we get different text about diffirent cookies, 28 pages in total from name=0 to name=28, the flag is in one of those.
+
+To challenge myself I wrote two bash scripts to automate the process of downloading the different html pages for each name value, and sifting through those to find the one containing the flag.

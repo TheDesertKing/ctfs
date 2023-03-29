@@ -1,0 +1,36 @@
+What a great begginer challenge!
+
+Starting off, we get an executable and it's source code, showing us the vulnerable function `gets` is used.
+
+Why is `gets` vulnerable?
+The fucntion `gets` reads a line from standard input (stdin) and stores it inside a variable. The problem is that `gets` has no limit on the amount of characters it can read, which means we can put more data, a longer string, than the buffer could hold, the variable assigned to hold the user input, IE: Buffer Overflow!
+
+Reading main's instructions, I found the compare instruction that is used to see if the 'code' variable contains the value '0xdeadbeef' (disassemble main), and inserted a breakpoint on it (break *main+143).
+
+Using the PwnTools tool Cyclic, I generated a cyclic pattern of length 1000 chars, and inserted it into a file and used it to run the executable within GDB (r < fileName), essentially running the executable with the file's content in the stdin buffer.
+
+The executalbe crashed! Great! all we have to do now is to find out at what offset the value of the 'code' variable is stored at. This challenge prints it for us before the program crashes, which is usefull, but that's uncommon, so let's use our cyclic pattern to figure it out on our own:
+
+Because the expression being CMP'd (compared) with the value of '0xdeadbeef' has to be the address of the 'code' variable (we can certify that by viewing the source code, but also it only makes sense, as it's the only compare instruction), so let's see what value is stored in it, let's run the following command in GDB:
+
+x/wx $rbp-8
+
+This eXamines the value stored within the address of 'code', a Word size of data interpreted as heX.
+
+prints: 0x63616171
+
+These are most likely chars, due to the values 63 61 61 71 being non-capatalized characters within the ASCII table, which is what we inserted via Cyclic.
+
+Running it back through the Cyclic tool will return us the offset, the distance from the address of the variable holding the returned data from the `gets` function to the address of the 'code' variable.
+
+cyclic.exe -l 0x63616171
+
+The '-l' switch stands for 'lookup', as to lookup the offset of the characters from the start of the cyclic pattern.
+
+prints: 264
+
+So now we know our payload should be 264 characters and then 0xdeadbeef, we can use any characters for the 264 buffer.
+
+PAYLOAD: "A"*264 + 0xdeadbeef
+
+Now we can craft our payload and using some Pwntools python magic we can open a connection to the remote server, send the payload, and read the flag.

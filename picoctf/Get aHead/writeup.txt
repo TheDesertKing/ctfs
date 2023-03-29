@@ -1,0 +1,8 @@
+This is an easy challenge, there are two buttons that redirect us to the same page with a different background color, red and blue.
+
+The difference between the two requests are that red is GET and blue is POST.
+
+I tried DELETE just to see, but then I had remembered the name of the challenge:
+Get aHead!
+
+So trying to send a HEAD request returns the flag in the response headers!

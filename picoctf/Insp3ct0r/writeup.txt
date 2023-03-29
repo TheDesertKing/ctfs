@@ -1,0 +1,1 @@
+Another easy challenge, the flag is contained within the HTML, CSS & JS, a third of it in each.

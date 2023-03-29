@@ -1,0 +1,7 @@
+This challenge was very simple to me.
+
+Opening up Firefox's Devtools, I could see, using the Network tab that a JS script is getting downaloded named md5.js, but it seems to not be found by the server, as we are getting a reseponse code of 404 for it.
+
+Well, lets see what JS does run on the client side?
+Using the Debugger tool from Devtools, I can inspect the js of the index html file.
+It is very clear by scanning the code that there is a check containing the flag, cut to sections of 4 characters, in mixed order, so all that's left for us to do is fix the order!

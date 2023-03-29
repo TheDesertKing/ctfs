@@ -1,0 +1,17 @@
+So this one was rather simple, yet I had to learn a bit about different JS functions.
+
+The challenge is as such: we are faced with a login page, which we don't know the username or password to and we need to find those.
+
+Using Firefox's DevTools (F12), we can inspect the data being transfered from the server to our PC using the Network tab. In it we see an 'index.js' file being downloaded, which isn't very common, so this is possibly where we need to look...
+
+Opening up 'index.js' using the DevTools' Debugger tool, we can read a JS code that takes the data which we submitted, and runs it through the `btoa` function, and replacing any '=' character with '' (nothing).
+
+The `btoa` JS function takes in a string and returns a base64 encoded version of it (as a string).
+
+This base64 string is now being compared to a static, base64-encoded-looking, string, and if both username's and password's base64 encoded version are both equal to thestatic strings, we would be prompted with the flag, which is actually the decoded password.
+
+All that's left to do is decode the static password base64 string, as base64 is encoding, not encrypting, which means it is bi-directional.
+
+Using bash we could: `echo (base64-encoded-string) | base64 -d`, which would yeild out our flag!
+
+
