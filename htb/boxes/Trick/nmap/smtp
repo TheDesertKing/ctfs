@@ -1,0 +1,9 @@
+# Nmap 7.92 scan initiated Sat Sep 24 05:50:00 2022 as: nmap -p25 --script smtp-commands -oN ./nmap/smtp 10.10.11.166
+Nmap scan report for 10.10.11.166
+Host is up (0.19s latency).
+
+PORT   STATE SERVICE
+25/tcp open  smtp
+|_smtp-commands: debian.localdomain, PIPELINING, SIZE 10240000, VRFY, ETRN, STARTTLS, ENHANCEDSTATUSCODES, 8BITMIME, DSN, SMTPUTF8, CHUNKING
+
+# Nmap done at Sat Sep 24 05:50:13 2022 -- 1 IP address (1 host up) scanned in 12.19 seconds

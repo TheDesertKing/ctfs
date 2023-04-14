@@ -1,0 +1,30 @@
+This challenge has two parts, getting a foothold via exploiting a Kibana vulnerability, and then privilage escalating to root permissions, using unsafely assigned linux capabilites.
+
+The first part: Kibana
+
+I heard about kibana a few times as there were reportings of vulnerabilities in Elastic Search I analysed while working at Snyk, so I had the broaded context of the project in mind, but it is a visulization tool for a search engine, so from the start it seemed like this wasn't about the Kibana project, but probably about an old vulnerability of their's.
+
+After using Nmap to gather information about open ports, I've seen ports 22,80,5044,5601 open, leading me to open a web browser and see there's nothing interesting there.
+
+So after googling around I figured that the Kibana project uses port 5601 as default, so It's probably the vector of attack for this challenge, and I also saw that in the installed version of Kibana, there is an RCE vulnerability.
+
+After reading a bit about said vulnerability, I came across this PoC: https://github.com/LandGrey/CVE-2019-7609/blob/master/CVE-2019-7609-kibana-rce.py, which is a scripted tool for finding and using this vulnerability to open a reverse shell to a specified host's port.
+
+After tweaking the script (I knew the version is vulnerable so I removed all the version checks) I was able to get a reverse shell on the machime. YAY!
+
+
+The second part: Capabilites
+
+After reading about capabilites I came across this command which lets you search for any binary with capability permissions:
+
+getcap -r /
+
+getcap is a command to view capabilites assigned to binaries, the `-r` switch is used for recursive search, and the / specifies to search all files in the file system.
+
+This enumeration came through with a few files which have capabilites but one was special, named "python3" under a directory named ".hackmeplease".
+
+Googling the permissions landed me on a HackTricks article about Linux capabilites which showed me the obvious way to escalate priviliges using python, which I should have thought of myself:
+
+python3 -c "import os; os.setuid(0); os.system('/bin/bash')"
+
+Using the `-c` switch means that python will execute what's in the next argument rather than running in terminal mode, "import os" is used to import the `os` module of python, containing useful operating system related functions, "os.setuid(0)" in order to set the python process' user ID to 0 (which means root), and "os.system('/bin/bash')" in order to open a new shell instance, now as root, since the user ID is 0.
