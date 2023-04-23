@@ -1,0 +1,35 @@
+This challenge revolves around understanding python
+server-side code, as we are provided with the site's source.
+
+It's a short script the conditions are quite simple:
+
+```python
+
+num_hosts = 0
+for name, value in headers:
+    if name == b"host":
+        num_hosts += 1
+
+if num_hosts == 1:
+    for name, value in headers:
+        if name == b"host" and value == SECRET_SITE:
+            await send({
+                'type': 'http.response.body',
+                'body': FLAG.encode(),
+            })
+            return
+```
+
+The first block of code checks whether the request we sent
+contains a header named `host`, if so, execute the next block.
+
+The second block checks if the value the `host` header was
+set to is equal to the value of the variable SECRET_SITE,
+which is set on line 4:
+
+```python
+SECRET_SITE = b"flag.local"
+```
+
+So the check is whether the `host` header was set to `flag.local`,
+and if so, the flag is displayed!

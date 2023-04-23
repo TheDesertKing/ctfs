@@ -1,0 +1,9 @@
+This challenge is quite straight forward:
+	Login verification is done client side,
+	thus password is "cleartext".
+
+Exept it's scrambled so some reverse engineering
+of the `chunk` and `swap` function are required,
+in order to understand the password we need to put in
+for it to turn out to be the string that our input
+is validated against.
