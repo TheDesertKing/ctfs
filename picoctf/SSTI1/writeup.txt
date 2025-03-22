@@ -1,0 +1,20 @@
+A simple SSTI expoitation challenge.
+
+First thing I did was to look for an XSS vulnerability, as I saw the data I insert in the form is directly added to the HTML.
+Then I read the challenge's name and was reminded of what SSTI ment.
+No, it's not a sort of sexual disease, but Server Side Template Injection, which means the ability to expoit the template engine to do as we wish.
+
+In this case, I've looked up online some payload examples, and after seeing some work and others dont, I wanted to understand what the payloads did.
+
+I've seen the '{{ config }}' template allows us to see some interesting data about the template modules configurations, but that didn't proove helpful.
+
+Then I've seen these payloads, which seem to be working:
+{{''.__class__.__base__.__subclasses__()}} # Search for Popen process, use payload below change 227 to index of Popen
+{{''.__class__.__base__.__subclasses__()[227]('cat /etc/passwd', shell=True, stdout=-1).communicate()}}
+
+The first one allows us to search for the 'Popen' process from the 'subprocess' module. Using Popen we can create a new process to run whatever commands we'd like, then push the data they return to stdin, in order to view them.
+
+So here is the final payload:
+{{''.__class__.__base__.__subclasses__()[356]('cat flag', shell=True, stdout=-1).communicate()}}
+
+The flag was in the current directory so all we had to do was to cat it out, the 356 is the process for Popen.
