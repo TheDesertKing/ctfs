@@ -1,0 +1,336 @@
+Bandit Writeup:
+
+#Level 0:
+They tell us to SSH in... aight!
+
+-solution:
+`ssh -p 2220 bandit0@bandit.labs.overthewire.org`
+
+
+#Level 1:
+After logging in, we can locate a file in the current directory.
+
+`ls`
+`-`
+
+Okay, now we just have to read this file!
+Problem is, `cat -` or `vim -` wouldn't work as '-' is used to add flags to commands in Bash.
+
+A way to specify it's a file is to add a path specifier, like `/../../..` or `./`.
+
+-solution:
+`cat ./-`
+
+
+#Level 2:
+Same thing as last level.
+
+`ls`
+`spaces in this filename`
+
+Now just gotta escape the spaces so Bash will get that it's the same file.
+
+-solution:
+`cat spaces\ in\ this\ filename`
+
+
+#Level 3:
+Okay we have a directory, let's cd into it.
+
+`ls`
+`inhere`
+
+`cd inhere`
+
+Oh but it's empty, but is it? let's view all files in the directory with a flag.
+
+`ls -a`
+`. .. ...Hiding-From-You`
+
+-solution:
+`cat ...Hiding-From-You`
+
+
+#Level 4:
+`cd inhere`
+
+`ls`
+`-file00  -file01  -file02  -file03  -file04  -file05  -file06  -file07  -file08  -file09`
+
+Okay many files, let's try and read all of them at once.
+
+`cat ./*`
+`�ŉOT���S �plS]-EH�t�:-�Z�
+                         N$���'���Se��
+                                      \�- V�P�jls�����
+                                                      o5e�Mz9�#P�ws������Oh||xt��6|ر��Vܒ��q ��*rMӼ^';b\�
+x����]C�
+        �H`�/�X��OGLV��*��-o��w9�P�RAz�b��␦[��F���_��+J��2X1�M�O�g��Y����d�Ŧj4oQYVPkxZOOEOO5pTW81FB8j8lxXGUQw
+t)�r�R�C#�ӧ��4��_�\����^�)C`
+
+Okay that's wierd binary, let's try and see of what type.
+
+`file ./-file00`
+`./-file00: PGP Secret Sub-key -`
+
+Interesting. PGP is an encryption tool. Let's see how we can add these files together.
+
+Okay, after a lot of googling and reading about PGP, it seems I've fell for a red herring.
+In the files, there is a string of text, searching them one by one shows us one of them is fully textual, and it is the password.
+
+-solution:
+`cat ./-file07`
+
+
+#Level 5:
+This is a mess... folders in a structure that will require me to do a lot of manual work. Let's try and seive through.
+
+`cat inhere/*/*`
+`*tons of data*`
+
+First, I've tried to filter through file type.
+There is one of 'ASCII text, with very long lines' is very common, and due to it's name, I assume the password won't be here.
+The file type 'data' is not textual, so let's remove it too.
+
+`file inhere/*/* | grep -Ev 'long|data'
+inhere/maybehere00/-file3:       OpenPGP Secret Key
+inhere/maybehere01/-file2:       ASCII text
+inhere/maybehere05/-file3:       OpenPGP Public Key
+inhere/maybehere08/spaces file1: ASCII text
+inhere/maybehere12/-file2:       ASCII text
+inhere/maybehere14/-file3:       OpenPGP Secret Key
+inhere/maybehere15/spaces file2: ASCII text
+inhere/maybehere18/-file2:       ASCII text`
+
+That's not too many files, let's go one by one.
+
+Okay, I've tried going one by one, but I feel I can do better than that.
+The passwords so far have the same length and consist of [A-Za-z], let's use it.
+(Editor's note: I've missed the fact the password contains numbers... makes sense it doesn't work...)
+
+`find inhere/* -type f -print0 | xargs -0 grep -E "[A-Za-z]{33}$"`
+``
+No help either, I got nothing.
+After a rest, I've taken to look at the web page for the challenge, and now I see there are extra details there.
+
+We can filter via one of the 3 parameters, but that's easy, let's do all three in one.
+It's scrappy, but it does the work.
+
+-solution:
+`find inhere/ -type f | while read -r file; do wc -c "$file"; done | grep 1033 | awk '{print $2}' | xargs file | grep text | awk '{print $1}' | cut -d':' -f1 | xargs cat`
+
+
+#Level 6:
+Find a file in the whole system using some information.
+Okay let's read the file manual.
+So there are flags for searching for owner user and group, all we have to do is ignore the "permission denied" output, which is classified with code 2 for an error, so we can redirct it to /dev/null to ignore it.
+I also added a pipe to xagrs cat to print the file's content.
+
+-solution:
+`find / -type f -user bandit7 -group bandit6 2>/dev/null | xargs cat`
+
+
+#Level 7:
+Finding text in a file? easy grep job.
+I also added awk, to print the second column, meaning the second substring, when seperating the string by a space.
+
+-solution:
+`cat data.txt | grep millionth | awk '{print $2}'`
+
+
+#Level 8:
+Searching for unique text in a file? uniq sounds like the tool.
+But at first it didn't work, showed me many duplicate lines.
+It turns out you need to sort it before it works correctly.
+
+-solution:
+`sort data.txt | uniq -u`
+
+
+#Level 9:
+Human readable? strings is the command.
+Also the password is 32 characters lonf, made of lower and upper case letters with numbers.
+
+-solution:
+`strings data.txt | grep -E "= [a-zA-Z0-9]{32}" | awk '{print $2}'`
+
+
+#Level 10:
+Decoding base64, good thing there's a command for it.
+
+-solution:
+`base64 -d data.txt | awk '{print $4}'`
+
+
+#Level 11:
+Rot 13, huh. I wasn't sure how to do this, but turns out it's quite easy using tr.
+
+-solution:
+`cat data.txt | tr 'A-Za-z' 'N-ZA-Mn-za-m' | awk '{print $4}'`
+
+
+#Level 12:
+The solution is a long list of gzip -d, tar --extract -f, bzip2 -d9.
+
+
+#Level 13:
+We need to SSH into bandit14, let's use SSH with the -i flag to use the sshkey.private file, as an authentication method, instead of typing the password I don't have yet.
+
+-solution:
+`ssh -p 2220 -i sshkey.private bandit14@localhost`
+`The authenticity of host '[localhost]:2220 ([127.0.0.1]:2220)' can't be established.
+ED25519 key fingerprint is SHA256:C2ihUBV7ihnV1wUXRb4RrEcLfXC5CXlhmAAM/urerLY.
+This key is not known by any other names.
+Are you sure you want to continue connecting (yes/no/[fingerprint])?`
+`yes`
+`*The Bandit banner*`
+`cat /etc/bandit_pass/bandit14`
+
+
+#Level 14:
+Communication on port 30000. nc is a tool that allows us to communicate over a port.
+
+-solution:
+`nc localhost 30000`
+``
+`*Current password*`
+`Correct!`
+
+
+#Level 15:
+Honestly, I have no Interest in SSL so I just got it from the interwebs.
+
+-solution:
+`openssl s_client -connect localhost:30001 -ign_eof`
+
+
+#Level 16:
+Going off the last challenge, now we have to also scan ports, nmap for the job.
+
+`nmap -p31000-32000 localhost`
+`Starting Nmap 7.94SVN ( https://nmap.org ) at 2025-05-24 19:29 UTC
+Nmap scan report for localhost (127.0.0.1)
+Host is up (0.0016s latency).
+Not shown: 996 closed tcp ports (conn-refused)
+PORT      STATE SERVICE
+31046/tcp open  unknown
+31518/tcp open  unknown
+31691/tcp open  unknown
+31790/tcp open  unknown
+31960/tcp open  unknown
+
+Nmap done: 1 IP address (1 host up) scanned in 0.21 seconds`
+
+From here we've got a few ports, let's manually go one by one and try and see which answers to our TLS/SSL call.
+
+`openssl s_client -connect localhost:31046 -ign_eof`
+`CONNECTED(00000003)
+4087F0F7FF7F0000:error:0A0000F4:SSL routines:ossl_statem_client_read_transition:unexpected message:../ssl/statem/statem_clnt.c:398:
+---
+no peer certificate available
+---
+No client certificate CA names sent
+---
+SSL handshake has read 293 bytes and written 300 bytes
+Verification: OK
+---
+New, (NONE), Cipher is (NONE)
+Secure Renegotiation IS NOT supported
+Compression: NONE
+Expansion: NONE
+No ALPN negotiated
+Early data was not sent
+Verify return code: 0 (ok)
+---`
+
+Wrong answer, let's if one of them does allow us to pass the password.
+
+-solution:
+`openssl s_client -connect localhost:31790 -ign_eof`
+`*Bunch of TLS data...*
+read R BLOCK`
+`*Current password*`
+`Correct!
+*RSA key*
+closed`
+
+That's not the password, but maybe we can use it to connect to the next level.
+
+`ssh -p 2220 -i /tmp/amit bandit17@localhost`
+`The authenticity of host '[localhost]:2220 ([127.0.0.1]:2220)' can't be established.
+ED25519 key fingerprint is SHA256:C2ihUBV7ihnV1wUXRb4RrEcLfXC5CXlhmAAM/urerLY.
+This key is not known by any other names.
+Are you sure you want to continue connecting (yes/no/[fingerprint])?`
+`yes`
+`*...*
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@         WARNING: UNPROTECTED PRIVATE KEY FILE!          @
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+Permissions 0664 for '/tmp/amit' are too open.
+It is required that your private key files are NOT accessible by others.
+This private key will be ignored.
+Load key "/tmp/amit": bad permissions
+bandit17@localhost: Permission denied (publickey).`
+
+It seems to still have an issue... Oh the permissions? The key should be private? Okay, let's make it all mine, by allowing only my user to RW.
+
+`chmod 600 /tmp/amit`
+
+Now the SSH with the key works.
+
+
+#Level 17:
+I've actually just done this at my day-job, comparing files using grep with switches.
+
+F: Interpret input as strings, not regex
+x: Full line comparison
+v: Reverse the selection, find only lines that don't exist in the input file
+f: Get the input from a file
+
+-solution:
+`grep -Fxvf passwords.new passwords.old`
+
+
+#Level 18:
+Executing commands using ssh, let's see.
+Putting the command at the end seems to do it.
+
+`ssh -p 2220 bandit18@bandit.labs.overthewire.org "ls -la"`
+`total 24
+drwxr-xr-x  2 root     root     4096 Apr 10 14:23 .
+drwxr-xr-x 70 root     root     4096 Apr 10 14:24 ..
+-rw-r--r--  1 root     root      220 Mar 31  2024 .bash_logout
+-rw-r-----  1 bandit19 bandit18 3794 Apr 10 14:23 .bashrc
+-rw-r--r--  1 root     root      807 Mar 31  2024 .profile
+-rw-r-----  1 bandit19 bandit18   33 Apr 10 14:23 readme`
+
+-solution:
+`ssh -p 2220 bandit18@bandit.labs.overthewire.org "cat readme"`
+
+
+#Level 19:
+SetUID binaries, a cool concept where you can get perms of another user/group.
+This binary might allow us to do stuff as bandit20.
+
+-solution:
+`./bandit20-do cat /etc/bandit_pass/bandit20`
+
+
+#Level 20:
+So we need to connect into a port and print the password from that port.
+A reverse netcat would do the trick.
+
+I opened a new terminal and connected to bandit19, then used nc to listen on port 4567.
+
+`nc -lvp 4567`
+`Listening on 0.0.0.0 4567`
+
+Then on the other terminal used the suconnect binary to connect to it.
+
+`./suconnect 4567`
+
+Lastly, I pasted the current password to the terminal listening.
+
+`*Current password*`
+
+
