@@ -288,7 +288,7 @@ v: Reverse the selection, find only lines that don't exist in the input file
 f: Get the input from a file
 
 -solution:
-`grep -Fxvf passwords.new passwords.old`
+`grep -Fxvf passwords.old passwords.new`
 
 
 #Level 18:
