@@ -371,7 +371,7 @@ The data pushed is the password for this level, so we just need to run it, then 
 `cat /tmp/t7O6lds9S0RqQh9aMcz6ShpAoZKF7fgv`
 
 
-#Level 23:
+#Level 22:
 As I found out on the last level, there is a file we can read and execute relating to this level.
 
 `cat /usr/bin/cronjob_bandit23.sh`
@@ -537,5 +537,270 @@ So it broke right after inserting 2219, let's manually try it.
 *Current password* 2219
 Correct!`
 
+
+#Level 26:
+Interesting, talking about a different default shell.
+Trying to SSH using the key we've gotten is useless, as we are immideately logged out.
+It turns out that we can see the default shell in the /etc/passwd file.
+
+`cat /etc/passwd | grep bandit26`
+`bandit26:x:11026:11026:bandit level 26:/home/bandit26:/usr/bin/showtext`
+
+It looks like bandit26 can execute it, just making sure.
+
+`ls /usr/bin/showtext -la`
+`-rwxr-xr-x 1 root root 58 Apr 10 14:23 /usr/bin/showtext`
+
+Let's see what that script does.
+
+`cat /usr/bin/showtext`
+`#!/bin/sh
+
+export TERM=linux
+
+exec more ~/text.txt
+exit 0`
+
+So it reads the text.txt file that inside the bandit26 home directory. Let's take a look at that file.
+
+`ls /home/bandit26/text.txt -la`
+`-rw-r----- 1 bandit26 bandit26 258 Apr 10 14:23 /home/bandit26/text.txt`
+
+Can't read it.
+
+So I was a bit stumped by this level, didn't know where more to look. Funny enough it was the 'more' command I needed to better understand.
+More will either print out the whole file, or go into interactive mode, depending on the full file's content can be pasted onto one screen.
+So by chaning the terminal's size would allow us to go into interactive mode.
+From there, we can press 'v' to into vim, and then gain Bash access.
+
+`:set shell=/bin/bash`
+`:sh`
+
+-solution:
+`cat /etc/bandit_pass/bandit26`
+
+
+
+#Level 27:
+A repeat of challenge 19.
+
+-solution:
+`./bandit27-do cat /etc/bandit_pass/bandit27`
+
+
+#Level 28:
+Git based challenge, yay!
+I've never cloned a repo via SSH, so I had to read the manual.
+
+`ssh://[user@]host.xz[:port]/~[user]/path/to/repo.git/`
+
+Using this structure, we can safely git clone into a directory we can write to - /tmp.
+
+`git clone ssh://bandit27-git@localhost:2220/home/bandit27-git/repo /tmp/amitus`
+`Cloning into '/tmp/amitus'...
+*SSH fingerprint message*`
+`yes`
+`*Bandit banner*
+bandit27-git@localhost's password:`
+`*Current level's password*`
+`remote: Enumerating objects: 3, done.
+remote: Counting objects: 100% (3/3), done.
+remote: Compressing objects: 100% (2/2), done.
+remote: Total 3 (delta 0), reused 0 (delta 0), pack-reused 0
+Receiving objects: 100% (3/3), done.`
+
+Then we can see what's inside the repo, oh and hey look, a readme file.
+
+-solution:
+`cat /tmp/amitus/README`
+
+
+#Level 28
+Again git repo, let's clone it and see what's up.
+
+`git clone ssh://bandit28-git@localhost:2220/home/bandit28-git/repo /tmp/amitus2`
+`Cloning into '/tmp/amitus'...
+*SSH fingerprint message*`
+`yes`
+`*Bandit banner*
+bandit28-git@localhost's password:`
+`*Current level's password*`
+remote: Enumerating objects: 9, done.
+remote: Counting objects: 100% (9/9), done.
+remote: Compressing objects: 100% (6/6), done.
+remote: Total 9 (delta 2), reused 0 (delta 0), pack-reused 0
+Receiving objects: 100% (9/9), 798 bytes | 798.00 KiB/s, done.
+Resolving deltas: 100% (2/2), done.`
+
+Reading the readme file this time shows the password is X'd out.
+Git is a version control system, so maybe the password was saved previously?
+
+`cd /tmp/amitus2
+git log`
+`git log
+commit 674690a00a0056ab96048f7317b9ec20c057c06b (HEAD -> master, origin/master, origin/HEAD)
+Author: Morla Porla <morla@overthewire.org>
+Date:   Thu Apr 10 14:23:19 2025 +0000
+
+    fix info leak
+
+commit fb0df1358b1ff146f581651a84bae622353a71c0
+Author: Morla Porla <morla@overthewire.org>
+Date:   Thu Apr 10 14:23:19 2025 +0000
+
+    add missing data
+
+commit a5fdc97aae2c6f0e6c1e722877a100f24bcaaa46
+Author: Ben Dover <noone@overthewire.org>
+Date:   Thu Apr 10 14:23:19 2025 +0000
+
+    initial commit of README.md`
+
+From this log, it's clear that the data was removed in the latest commit, so we just have to go back one.
+
+-solution:
+`git checkout HEAD^
+cat README.md`
+
+
+#Level 29:
+Another git, *shit, here we go again*.
+
+After seeing the data we want isn't in the current branch, not even in the first commit, let's check out the other branches.
+
+`git branche -a`
+`* (HEAD detached at 8d2ffeb)
+  master
+  remotes/origin/HEAD -> origin/master
+  remotes/origin/dev
+  remotes/origin/master
+  remotes/origin/sploits-dev`
+
+Going one by one, we can see it in dev.
+
+-solution:
+`git checkout dev
+cat README.md`
+
+
+#Level 30:
+Another git, let's clone.
+
+After not figuring this out, I've went to check the solution online.
+Turns out there are this things called git tags and they hide information in them? It's a cool mechanism of signing and stuff, but why would it hold data? Honestly, this feels very niche and useless to me.
+Nonetheless, let's continue.
+
+-solution:
+`git show secret`
+
+
+
+#Level 31:
+More git huh? I'll give it a go, but probably read a writeup, as there is no productive way to figure these challenges out without going on 10 trails of learning niche and useless things...
+
+Turns out I was just whining. It's a simple challnge topush a file to the remote branch.
+To start it, let's create the file with the relevant content.
+
+`echo "May I come in?" > key.txt`
+
+We need to push to branch 'master', which we are already on, as we can see here.
+
+`git branch`
+`* master`
+
+So all we have to do now is to commit the changes and push it to the remote repo.
+
+`git add .`
+
+Adding the file to staging.
+
+`git commit -m "pushin!"`
+`Your branch is up to date with 'origin/master'. create mode 100644 key.txt`
+
+Commiting the change in staging.
+
+`git push`
+`On branch master
+Your branch is up to date with 'origin/master'.`
+
+Mmm, up to date? But I've just commited changes.
+Let's see if there is a reason my changes were ignored.
+
+`ls -la`
+`total 9996
+drwxrwxr-x   3 bandit31 bandit31     4096 May 31 14:26 .
+drwxrwx-wt 105 root     root     10211328 May 31 14:27 ..
+drwxrwxr-x   8 bandit31 bandit31     4096 May 31 14:26 .git
+-rw-rw-r--   1 bandit31 bandit31        6 May 31 14:26 .gitignore
+-rw-rw-r--   1 bandit31 bandit31       15 May 31 14:26 key.txt
+-rw-rw-r--   1 bandit31 bandit31      147 May 31 14:26 README.md`
+
+Ah! a .gitignore file. This file selects what files should be ignored by git.
+
+`cat .gitignore`
+`*.txt`
+
+Yep, this affects our key.txt file. Let's remove this .gitignore file.
+
+`rm .gitignore`
+
+And do the commiting process again.
+
+`git add .`
+
+`git commit -m "pushin!"
+`[master af07c56] pushin!
+ 2 files changed, 1 insertion(+), 1 deletion(-)
+ delete mode 100644 .gitignore
+On branch master`
+
+-solution:
+
+`git push`
+`*SSH fingerprint message*`
+`yes`
+`*Bandit banner*
+bandit31-git@localhost's password:`
+`*Current Level's password*`
+
+
+#Level 32:
+Wierd shell challnge, I feel equiped from the other challenge that had a wierd shell.
+
+I've logged in as bandit 31 again, to check the shell file for the bandit32 user.
+
+`cat /etc/passwd | grep bandit32`
+`bandit32:x:11032:11032:bandit level 32:/home/bandit32:/home/bandit32/uppershell`
+
+The shell file is at /home/bandit32, named 'uppershell'. Let's see what we can do with it.
+
+`ls -la /home/bandit32`
+`total 36
+drwxr-xr-x  2 root     root      4096 Apr 10 14:23 .
+drwxr-xr-x 70 root     root      4096 Apr 10 14:24 ..
+-rw-r--r--  1 root     root       220 Mar 31  2024 .bash_logout
+-rw-r--r--  1 root     root      3771 Mar 31  2024 .bashrc
+-rw-r--r--  1 root     root       807 Mar 31  2024 .profile
+-rwsr-x---  1 bandit33 bandit32 15140 Apr 10 14:23 uppershell`
+
+So as bandit31, not being part of the bandit32 group or the bandit33 user, cannot do anything with this file, not even read it.
+
+Okay, so we need to go into this blind.
+Let's give it a go.
+
+After trying some stuff and googling, I opened the writeup.
+It seems that '$0' evaluates to the current shell's name, so simply calling it, would create a new shell instance.
+
+-solution:
+`$0`
+`$ `
+`whoami`
+`bandit33`
+`cat /etc/bandit_pass/bandit33`
+
+
+That's it! finished Bandit!
+I had to use writeups quite a lot, but this are some niche topics that there are no other means of learning, but just randomlly coming across, so I give myself the pass.
+My attempt is to learn, I've yet to get the tools required to get the answers on my own, so it's okay for me to learn now!
 
 
