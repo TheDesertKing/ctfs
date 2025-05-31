@@ -1,0 +1,80 @@
+#Level 0:
+Web exploitation, it's been a moment for me.
+Let's dive in!
+
+###Chellenge Prompt:
+You can find the password for the next level on this page.
+
+Looking at the first page, I opened devtools (F12) and looked around. 
+
+Under the line of "You can find the password for the next level on this page.You can find the password for the next level on this page.", I've found this HTML comment:
+
+`<!--The password for natas1 is 0nzCigAq7t2iALyvU9xcHlYN4MlkIwlq -->`
+
+
+#Level 1:
+###Chellenge Prompt:
+You can find the password for the next level on this page, but rightclicking has been blocked!
+
+Right clicking has been blocked, good thing we don't need it.
+Dev tools again would allow us to see the password:
+
+`<!--The password for natas2 is TguMNxKo1DSa1tujBLuZJnDUlCcUAPlI -->`
+
+
+#Level 2:
+###Chellenge Prompt:
+There is nothing on this page
+
+Let's see if there truly is nothing on this page.
+
+It seems there is an <img> tag, with a link to 'files/pixel.png', let's see what that file contains.
+After seeing it's simply an image of a single pixel, I've downloaded the file and tried reading it, only to see it is a simple png, nothing hidden.
+
+The png file is inside the 'files' folder, let's see if we can see what's in it:
+
+`http://natas2.natas.labs.overthewire.org/files/`
+
+It seems we can view the directory, and in it there's a text file users.txt containing the natas3 password.
+
+natas3:3gqisGdR0pjm6tpkDKdIWO2hSvchLeYH
+
+
+#Level 3:
+###Chellenge Prompt:
+There is nothing on this page
+
+Looking at the page's HTML code, we can see a comment:
+
+`<!-- No more information leaks!! Not even Google will find it this time... -->`
+
+I think this is hinting at 'google dorking', a use of google searches with arguments to view content that would be otherwise hard to find.
+
+`site:*.natas.labs.overthewire.org`
+
+This seems to give us nothing. Oh well.
+Reading the comment, "NOT even google will find this", I can assume that google crawling was disabled, and the most common way to do so is with robots.txt, a file that lists endpoints that crawlers are not allowed to crawl.
+
+`http://natas3.natas.labs.overthewire.org/robots.txt`
+
+There's an interesting endpoint listing:
+`Disallow: /s3cr3t/`
+
+`http://natas3.natas.labs.overthewire.org/s3cr3t/`
+
+Inside this endpoint we see a users.txt file, in which the password for natas4 resides:
+
+natas4:QryZXc2e0zahULdHrtHxzyYkj59kUxLQ
+
+
+#Level 4:
+###Chellenge Prompt:
+Access disallowed. You are visiting from "" while authorized users should come only from "http://natas5.natas.labs.overthewire.org/"
+
+Taking a look at the prompt, it seems to refer to where we came from, "" being the root of the website "/". This is tracked in HTTP via the "refferer" header. Let's add it to our call and try again.
+
+I've tried doing stuff with curl, but that felt less intiutive than I can make it.
+So I've set up Burp Suite Community, alongisde FoxyProxy on Chrome, to intercept the HTTP/S calls.
+Let's change the 'Referrer' header to be exatctly the text specified in the prompt.
+
+Access granted. The password for natas5 is 0n35PkggAPm2zbEpOU802c0x0Msn1ToK
