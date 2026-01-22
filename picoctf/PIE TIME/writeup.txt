@@ -1,0 +1,10 @@
+A very good challenge that teaches you how PIE works.
+
+I've taken a long leave since the last time I've done binary exploitation, and I wasn't that good at the first place, so I started from zero essentially.
+
+PIE is a binary exploitation protection technique, which randomizes the starting point of a program in the memmory, while keeping everything relative.
+
+Using this information, once we have a single address, we can calculate the diffrence between it and the 'win' function.
+In this case we were given the main's address, which was 0x96 less than the 'win' function's address.
+
+So to solve this, you will need to subtract 0x96 from the address shown at the start of the program.

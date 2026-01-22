@@ -1,0 +1,3 @@
+id,response,lines,word,chars,request,success
+8020,200,96,1750,11521,tiny,1
+45226,200,147,526,6917,http://soccer.htb/,1

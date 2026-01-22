@@ -1,0 +1,10 @@
+# Nmap 7.80 scan initiated Sun Nov 16 01:06:14 2025 as: nmap -sC -oN simple.nmap 10.10.11.92
+Nmap scan report for 10.10.11.92
+Host is up (0.068s latency).
+Not shown: 998 closed ports
+PORT   STATE SERVICE
+22/tcp open  ssh
+80/tcp open  http
+|_http-title: Did not follow redirect to http://conversor.htb/
+
+# Nmap done at Sun Nov 16 01:07:06 2025 -- 1 IP address (1 host up) scanned in 51.90 seconds

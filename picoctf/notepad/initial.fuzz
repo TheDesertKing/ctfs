@@ -1,0 +1,3 @@
+id,response,lines,word,chars,request,success
+19,405,4,23,178,new,1
+45226,200,6,14,147,https://notepad.mars.picoctf.net/,1

